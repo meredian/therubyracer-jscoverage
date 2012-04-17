@@ -4,28 +4,18 @@ require 'js_coverage_html_printer'
 
 module JSCoverage
 
-  @coverage_resolution = {}
-  @coverage_extended = {}
+  @coverage_full = {}
 
-  def self.merge_resolution coverage_resolution
-    coverage_resolution.each do |file, coverage|
-      @coverage_resolution[file] ||= {total:0, covered:0, percent:0}
-      res = @coverage_resolution[file]
-      res[:total] += coverage[:total]
-      res[:covered] += coverage[:covered]
-      res[:percent] = percent_coverage(res[:total], res[:covered])
-    end
-  end
+  def self.merge_full coverage_full
+    coverage_full.each do |file, coverage|
+      if @coverage_full[file]
 
-  def self.merge_extended coverage_extended
-    coverage_extended.each do |file, coverage|
-      if @coverage_extended[file]
-        ext = @coverage_extended[file]
-        ext.each_with_index { |line, index|
-          src[:count] += coverage[index][:count]
+        @coverage_full[file][:calls] = @coverage_full[file][:calls].each_with_index.collect { |count, index|
+          count + coverage[:calls][index] unless count.nil?
         }
+
       else
-        @coverage_extended[file] = coverage
+        @coverage_full[file] = coverage
       end
     end
   end
@@ -45,36 +35,50 @@ module JSCoverage
     covered_code.to_f / total_code.to_f * 100.0
   end 
 
+  def self.clean_lines lines
+    lines.collect{ |line| CGI.unescapeHTML(line) }
+  end
+
   def self.collect_line_output source, calls
-    calls.shift
-    source.each_with_index.collect { |src, index| {count: calls[index], source: CGI.unescapeHTML(src)} }
+    source.each_with_index.collect { |line, index| {count: calls[index], source: line} }
+  end
+
+  def self.create_resolution
+    @coverage_resolution = {}
+    @coverage_full.each do |file, coverage|
+      @coverage_resolution[file] = collect_line_coverage coverage[:calls]
+    end
+  end
+
+  def self.create_extended
+    @coverage_extended = {}
+    @coverage_full.each do |file, coverage|
+      @coverage_extended[file] = collect_line_output coverage[:source], coverage[:calls]
+    end
   end
 
   def self.extract context
     coverage = context["_$jscoverage"]
-
-    coverage_resolution = {}
-    coverage_extended = {}
+    coverage_full = {}
 
     coverage.each do |filename, calls|
       source = source_for_file context, filename.to_s
       calls = convert_v8(calls)
+      calls.shift
 
-      coverage_resolution[filename] = collect_line_coverage calls
-      coverage_extended[filename] = collect_line_output source, calls
+      coverage_full[filename] = { calls: calls, source: clean_lines(source)}
     end
 
-    merge_resolution coverage_resolution
-    merge_extended coverage_extended
+    merge_full coverage_full
   end
 
   def self.print_console
-    filename_len = @coverage_resolution.collect{ |filename, cov| filename }.max_by(&:length)
+    filename_len = @coverage_resolution.collect{ |filename, cov| filename }.max_by(&:length).length
 
     puts "JSCoverage"
     puts "Javascript coverage for executable lines (no comments/blank lines/etc.)"
     @coverage_resolution.each do |filename, coverage|
-      puts printf "   %s  %3.1f%% (%i of %i)", filename, coverage[:percent], coverage[:covered], coverage[:total]
+      puts printf "   %-#{filename_len}s  %3.1f%% (%i of %i)", filename, coverage[:percent], coverage[:covered], coverage[:total]
     end
   end
 
@@ -86,6 +90,9 @@ module JSCoverage
 
   def self.report
     if ::ENV["JSCOV"] || true
+      create_resolution
+      create_extended
+
       print_console
       html_print
     end
