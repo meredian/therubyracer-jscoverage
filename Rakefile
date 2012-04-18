@@ -10,7 +10,7 @@ require 'js_coverage'
 desc "Intruments javascript"
 task :instrument_js do
 
-  ENV["JSCOV"] = "YES"
+  ENV["JSCOV"] ||= "YES"
 
   ver = `jscoverage -V 2>&1`
   params = '--no-highlight --encoding=UTF8'

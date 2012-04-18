@@ -58,6 +58,7 @@ module JSCoverage
   end
 
   def self.extract context
+    return unless cover?
     coverage = context["_$jscoverage"]
     coverage_full = {}
 
@@ -88,7 +89,7 @@ module JSCoverage
   end
 
   def self.report
-    if ::ENV["JSCOV"]
+    if cover?
       puts "JSCoverage Tool executed..."
       create_resolution
       create_extended
@@ -106,5 +107,9 @@ module JSCoverage
   def self.report_and_clear
     report
     @create_resolution.clear
+  end
+
+  def self.cover?
+    return (ENV["JSCOV"] == "YES")
   end
 end
