@@ -102,4 +102,9 @@ module JSCoverage
       html_print
     end
   end
+
+  def self.report_and_clear
+    report
+    @create_resolution.clear
+  end
 end
