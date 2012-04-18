@@ -33,7 +33,7 @@ module JSCoverage
 
   def self.percent_coverage total_code, covered_code
     covered_code.to_f / total_code.to_f * 100.0
-  end 
+  end
 
   def self.clean_lines lines
     lines.collect{ |line| CGI.unescapeHTML(line) }
