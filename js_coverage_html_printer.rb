@@ -7,8 +7,6 @@ require 'cgi'
 module JSCoverage
   class HTMLPrinter
 
-    HeaderTemplatePath = "template_header.html"
-
     def self.coverage_rate percent
       return 'high' if percent >= 75
       return 'medium' if percent >= 50
@@ -76,13 +74,14 @@ module JSCoverage
     end
 
     def self.format_line index, count, source
-      output = %(<tr #{'class="hit"' unless count.nil?}><td class="line">#{index}</td><td class="hits">#{count}</td><td class="source">#{source}</td></tr>)
+      output = %(<tr #{'class="miss"' if !count.nil? && count.to_i == 0}><td class="line">#{index}</td><td class="hits">#{count}</td><td class="source">#{source}</td></tr>)
     end
 
   end
 
   HeaderTemplate = <<HEADER_TEMPLATE
-  <head><title>Javascript test coverage</title><script>
+  <head><title>Javascript test coverage</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"><script>
 
 headings = [];
 
@@ -413,6 +412,7 @@ td.source {
   line-height: 15px;
   white-space: pre;
   font: 12px monaco, monospace;
+  background: #ddffdd;
 }
 
 code .comment { color: #ddd }

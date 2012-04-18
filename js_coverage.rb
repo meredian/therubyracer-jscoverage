@@ -75,7 +75,7 @@ module JSCoverage
   def self.print_console
     filename_len = @coverage_resolution.collect{ |filename, cov| filename }.max_by(&:length).length
 
-    puts "JSCoverage"
+    puts "JSCoverage Tool executed..."
     puts "Javascript coverage for executable lines (no comments/blank lines/etc.)"
     @coverage_resolution.each do |filename, coverage|
       puts printf "   %-#{filename_len}s  %3.1f%% (%i of %i)", filename, coverage[:percent], coverage[:covered], coverage[:total]
