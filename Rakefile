@@ -33,9 +33,6 @@ task :instrument_js do
 
   source_dir = File.join ROOT_DIR, "js"
   instructed_source_dir = File.join ROOT_DIR, "js-instrumented"
-
-
-  puts "jscoverage #{source_dir} #{instructed_source_dir} #{params}"
   system "jscoverage #{source_dir} #{instructed_source_dir} #{params}"
 
   dest_file = File.join ROOT_DIR, 'all.js'

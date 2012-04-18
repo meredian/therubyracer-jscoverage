@@ -73,10 +73,9 @@ module JSCoverage
   end
 
   def self.print_console
-    filename_len = @coverage_resolution.collect{ |filename, cov| filename }.max_by(&:length).length
-
-    puts "JSCoverage Tool executed..."
     puts "Javascript coverage for executable lines (no comments/blank lines/etc.)"
+
+    filename_len = @coverage_resolution.collect{ |filename, cov| filename }.max_by(&:length).length
     @coverage_resolution.each do |filename, coverage|
       puts printf "   %-#{filename_len}s  %3.1f%% (%i of %i)", filename, coverage[:percent], coverage[:covered], coverage[:total]
     end
@@ -84,14 +83,20 @@ module JSCoverage
 
   def self.html_print
     path = File.join( File.dirname(__FILE__), "coverage.html")
-    puts "Detailed reports stored in \"#{path}\" file"
+    puts "Detailed reports stored in following file: #{path}"
     HTMLPrinter.create_single_file path, @coverage_resolution, @coverage_extended
   end
 
   def self.report
-    if ::ENV["JSCOV"] || true
+    if ::ENV["JSCOV"]
+      puts "JSCoverage Tool executed..."
       create_resolution
       create_extended
+
+      if @coverage_resolution.length == 0
+        puts "No files were found for providing JSCoverage analysis"
+        return
+      end
 
       print_console
       html_print
