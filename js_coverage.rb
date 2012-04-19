@@ -94,7 +94,7 @@ module JSCoverage
       create_resolution
       create_extended
 
-      if @coverage_resolution.length == 0
+      if @coverage_full.length == 0
         puts "No files were found for providing JSCoverage analysis"
         return
       end
@@ -106,7 +106,7 @@ module JSCoverage
 
   def self.report_and_clear
     report
-    @create_resolution.clear
+    @coverage_full.clear
   end
 
   def self.cover?
